@@ -29,42 +29,12 @@ class User(AbstractUser):
         return f"{self.identity_no}"
 
     def save(self, *args, **kwargs):
-        def identity_validate(identity):
-            if len(identity) != 11 or not identity.isdigit() or str(identity)[0] == '0':
-                return False
-
-            digits = list(map(int, identity))
-
-            total1 = sum(digits[0:10:2])
-            total2 = sum(digits[1:9:2])
-            check1 = (total1 * 7 - total2) % 10
-            check2 = (total1 + total2 + check1) % 10
-
-            return check1 == digits[9] and check2 == digits[10]
-
-        def phone_validate(phone_number, file_path):
-            if len(phone_number) == 10 and phone_number.isdigit():
-                try:
-                    with open(file_path, 'r') as file:
-                        code = file.read().splitlines()
-                    phone_code = str(phone_number)[:3]
-                    if phone_code in code:
-                        return True
-                except:
-                    return False
-            return False
-
-
-        if identity_validate(self.identity_no):
-            if phone_validate(self.phone_number, 'phoneValidate.txt'):
+        if not self.customer_no:
+            self.customer_no = rnd.randint(100000000, 999999999)
+            while User.objects.filter(customer_no=self.customer_no).exists():
                 self.customer_no = rnd.randint(100000000, 999999999)
-                while User.objects.filter(customer_no=self.customer_no).exists():
-                    self.customer_no = rnd.randint(100000000, 999999999)
-                super().save(*args, **kwargs)
-            else:
-                raise ValueError("Invalid phone number")
-        else:
-            raise ValueError("Invalid identity number")
+        super().save(*args, **kwargs)
+
 
 
 class Account(models.Model):
