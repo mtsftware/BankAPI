@@ -65,9 +65,15 @@ class UserSerializer(serializers.ModelSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ('user', 'account_type', 'account_number', 'iban', 'balance',
+        fields = ('account_type', 'account_number', 'iban', 'balance',
                   'created_at', 'updated_at')
-        read_only_fields = ('user','account_number','iban','created_at', 'updated_at')
+        read_only_fields = ('account_number','iban','created_at', 'updated_at')
+
+    def update(self, instance, validated_data):
+        instance.account_type = validated_data.get('account_type', instance.account_type)
+        instance.balance = validated_data.get('balance', instance.balance)
+        instance.save()
+        return instance
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:

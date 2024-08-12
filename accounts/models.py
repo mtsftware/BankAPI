@@ -65,9 +65,10 @@ class Account(models.Model):
                 account_num=''.join([str(rnd.randint(0,9)) for _ in range(15)])
                 if not Account.objects.filter(account_number=account_num).exists():
                     return account_num
-
-        self.iban = iban_create()
-        self.account_number = account_number_create()
+        if not self.iban:
+            self.iban = iban_create()
+        if not self.account_number:
+            self.account_number = account_number_create()
         super().save(*args, **kwargs)
 
 class Transaction(models.Model):
