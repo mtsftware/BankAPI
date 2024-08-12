@@ -71,30 +71,47 @@ class Account(models.Model):
             self.account_number = account_number_create()
         super().save(*args, **kwargs)
 
-class Transaction(models.Model):
-    TRANSACTION_TYPES = [
-        ('deposit','Deposit'),
-        ('withdrawal', 'Withdrawal'),
-        ('transfer','Transfer'),
-        ('payment','Payment'),
-    ]
-
-    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='transactions')
-    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
+class Transfer(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    iban = models.CharField(max_length=26, null=False)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     description = models.TextField(blank=True, null=True)
     date = models.DateTimeField(auto_now_add=True)
-    reference = models.CharField(unique=True, max_length=20, blank=True)
+    extract_number = models.CharField(max_length=20, blank=True, unique=True)
 
     def __str__(self):
-        return f"{self.reference} - {self.date}"
+        return f"{self.extract_number} - {self.date}"
 
     def save(self, *args, **kwargs):
-        def reference_create():
+        def extract_create():
             while True:
-                reference_num = ''.join([str(rnd.randint(0,9)) for _ in range(30)])
-                if not Transaction.objects.filter(reference=reference_num).exists():
-                    return reference_num
+                extract_num = ''.join([str(rnd.randint(0, 9)) for _ in range(20)])
+                if not Transfer.objects.filter(extract_number=extract_num).exists():
+                    return extract_num
 
-        self.reference = reference_create()
+        self.extract_number = extract_create()
+        super().save(*args, **kwargs)
+
+class DepositAndWithdraw(models.Model):
+    TYPES = [
+        ('withdraw', 'Withdraw'),
+        ('deposit', 'Deposit')
+    ]
+
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    types = models.CharField(max_length=10, choices=TYPES, null=False)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    extract_number = models.CharField(max_length=20, blank=True, unique=True)
+    date = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"{self.extract_number} - {self.amount}"
+
+    def save(self, *args, **kwargs):
+        def extract_create():
+            while True:
+                extract_num = ''.join([str(rnd.randint(0, 9)) for _ in range(20)])
+                if not Transfer.objects.filter(extract_number=extract_num).exists():
+                    return extract_num
+
+        self.extract_number = extract_create()
         super().save(*args, **kwargs)

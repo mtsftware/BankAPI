@@ -75,8 +75,14 @@ class AccountSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-class TransactionSerializer(serializers.ModelSerializer):
+class TransferSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Transaction
-        fields = ('account', 'transaction_type', 'amount', 'description', 'date', 'reference')
-        read_only_fields = ('account', 'date', 'reference')
+        model = Transfer
+        fields = ['account', 'iban', 'amount', 'description', 'date', 'extract_number']
+        read_only_fields = ('account', 'date', 'extract_number')
+
+class DepositAndWithdrawSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DepositAndWithdraw
+        fields = ['account', 'types', 'amount', 'extract_number', 'date']
+        read_only_fields = ['account', 'extract_number', 'date']
