@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser, Permission, Group
 from django.db import models
 import random as rnd
 class User(AbstractUser):
+    username = None
+    date_joined = None
     email = models.EmailField(unique=True, null=False)
     first_name = models.CharField(max_length=50, null=False)
     last_name = models.CharField(max_length=50, null=False)
