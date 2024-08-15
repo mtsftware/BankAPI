@@ -1,27 +1,48 @@
+from accounts.backends import IdentityNoBackend
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny
 from accounts.models import User, Account
+from accounts.permissions import IsAuthenticated
 from accounts.serializers import UserSerializer, AccountSerializer, TransferSerializer, DepositAndWithdrawSerializer
 
 
-@api_view(['GET', 'POST'])
-def UserListCreateView(request):
-    if request.method == 'GET':
-        users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
-        return Response(serializer.data)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def UserCreateView(request):
     if request.method == 'POST':
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_view(request):
+    identity_no = request.data.get('identity_no')
+    password = request.data.get('password')
+
+    user = IdentityNoBackend().authenticate(request, identity_no=identity_no, password=password)
+
+    if user is not None:
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        })
+    else:
+        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def UserDetailView(request, id):
+    if not request.user.id == id:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     if request.method == 'GET':
         try:
-            user = User.objects.get(pk=id)
+            user = User.objects.get(pk=request.user.id)
             serializer = UserSerializer(user)
             return Response(serializer.data)
         except:
@@ -38,9 +59,12 @@ def UserDetailView(request, id):
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def AccountListCreateView(request, user_id):
+    if not request.user.id == user_id:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
-        user = User.objects.get(pk=user_id)
+        user = User.objects.get(pk=request.user.id)
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
@@ -58,11 +82,10 @@ def AccountListCreateView(request, user_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def AccountDetailView(request, user_id, account_id):
-    try:
-        user = User.objects.get(pk=user_id)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    if not request.user.id == user_id:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     if request.method == 'GET':
         try:
             account = Account.objects.get(pk=account_id)
@@ -83,9 +106,11 @@ def AccountDetailView(request, user_id, account_id):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def TransferView(request, user_id, account_id):
+    if not request.user.id == user_id:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
-        user = User.objects.get(pk=user_id)
         main_account = Account.objects.get(pk=account_id)
     except User.DoesNotExist or Account.DoesNotExist:
         return Response({'detail': 'User or account not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -111,9 +136,11 @@ def TransferView(request, user_id, account_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def DepositAndWithdrawView(request, user_id, account_id):
+    if not request.user.id == user_id:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
     try:
-        user = User.objects.get(pk=user_id)
         account = Account.objects.get(pk=account_id)
     except User.DoesNotExist or Account.DoesNotExist:
         return Response({'detail': 'User or account not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -137,6 +164,8 @@ def DepositAndWithdrawView(request, user_id, account_id):
             else:
                 return Response({'detail': 'Insufficient balance'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 # Create your views here.
