@@ -58,27 +58,27 @@ def AccountListCreateView(request, user_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def AccountDetailView(request, user_id, id):
+def AccountDetailView(request, user_id, account_id):
     try:
         user = User.objects.get(pk=user_id)
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
         try:
-            account = Account.objects.get(pk=id)
+            account = Account.objects.get(pk=account_id)
             serializer = AccountSerializer(account)
             return Response(serializer.data)
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
     if request.method == 'PUT':
-        account = Account.objects.get(pk=id)
+        account = Account.objects.get(pk=account_id)
         serializer = AccountSerializer(account, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'DELETE':
-        account = Account.objects.get(pk=id)
+        account = Account.objects.get(pk=account_id)
         account.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

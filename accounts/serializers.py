@@ -6,9 +6,9 @@ from .models import *
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('password', 'first_name', 'last_name', 'email',
+        fields = ('id','password', 'first_name', 'last_name', 'email',
                   'identity_no', 'phone_number', 'customer_no', 'created_at', 'updated_at')
-        read_only_fields = ('customer_no','created_at', 'updated_at')
+        read_only_fields = ('id','customer_no','created_at', 'updated_at')
         extra_kwargs = {'password': {'write_only': True, 'required':True, 'max_length': 6}}
 
     def validate_password(self, value):
@@ -65,9 +65,9 @@ class UserSerializer(serializers.ModelSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ('account_type', 'account_number', 'iban', 'balance',
+        fields = ('id','account_type', 'account_number', 'iban', 'balance',
                   'created_at', 'updated_at')
-        read_only_fields = ('account_number','iban','created_at', 'updated_at')
+        read_only_fields = ('id','account_number','iban','created_at', 'updated_at')
 
     def update(self, instance, validated_data):
         instance.account_type = validated_data.get('account_type', instance.account_type)
@@ -78,11 +78,11 @@ class AccountSerializer(serializers.ModelSerializer):
 class TransferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transfer
-        fields = ['account', 'iban', 'amount', 'description', 'date', 'extract_number']
-        read_only_fields = ('account', 'date', 'extract_number')
+        fields = ['id','account', 'iban', 'amount', 'description', 'date', 'extract_number']
+        read_only_fields = ('id','account', 'date', 'extract_number')
 
 class DepositAndWithdrawSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepositAndWithdraw
-        fields = ['account', 'types', 'amount', 'extract_number', 'date']
-        read_only_fields = ['account', 'extract_number', 'date']
+        fields = ['id','account', 'types', 'amount', 'extract_number', 'date']
+        read_only_fields = ['id','account', 'extract_number', 'date']
