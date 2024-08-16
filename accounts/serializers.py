@@ -12,8 +12,8 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True, 'required':True, 'max_length': 6}}
 
     def validate_password(self, value):
-        if len(value) < 6:
-            raise serializers.ValidationError('Password must be at least 6 characters')
+        if len(value) != 6:
+            raise serializers.ValidationError('Password must be 6 characters')
         if not value.isdigit():
             raise serializers.ValidationError('Password must contain only digits')
         return value

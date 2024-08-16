@@ -34,29 +34,29 @@ def login_view(request):
     else:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 @api_view(['GET', 'PUT', 'DELETE'])
-def UserDetailView(request, id):
+def UserDetailView(request, identity_no):
     if request.method == 'GET':
         try:
-            user = User.objects.get(pk=id)
+            user = User.objects.get(identity_no=identity_no)
             serializer = UserSerializer(user)
             return Response(serializer.data)
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
     if request.method == 'PUT':
-        user = User.objects.get(pk=id)
+        user = User.objects.get(identity_no=identity_no)
         serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'DELETE':
-        user = User.objects.get(pk=id)
+        user = User.objects.get(identity_no=identity_no)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 @api_view(['GET', 'POST'])
-def AccountListCreateView(request, user_id):
+def AccountListCreateView(request, identity_no):
     try:
-        user = User.objects.get(pk=user_id)
+        user = User.objects.get(identiy_no=identity_no)
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
@@ -74,10 +74,10 @@ def AccountListCreateView(request, user_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def AccountDetailView(request, user_id, account_id):
+def AccountDetailView(request, identity_no, account_id):
     if request.method == 'GET':
         try:
-            user = User.objects.get(pk=user_id)
+            user = User.objects.get(identity_no=identity_no)
             account = Account.objects.get(pk=account_id)
             serializer = AccountSerializer(account)
             return Response(serializer.data)
@@ -96,9 +96,9 @@ def AccountDetailView(request, user_id, account_id):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['POST'])
-def TransferView(request, user_id, account_id):
+def TransferView(request, identity_no, account_id):
     try:
-        user = User.objects.get(pk=user_id)
+        user = User.objects.get(identiy_no=identity_no)
         main_account = Account.objects.get(pk=account_id)
     except User.DoesNotExist or Account.DoesNotExist:
         return Response({'detail': 'User or account not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -124,9 +124,9 @@ def TransferView(request, user_id, account_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-def DepositAndWithdrawView(request, user_id, account_id):
+def DepositAndWithdrawView(request, identity_no, account_id):
     try:
-        user = User.objects.get(pk=user_id)
+        user = User.objects.get(pk=identity_no)
         account = Account.objects.get(pk=account_id)
     except User.DoesNotExist or Account.DoesNotExist:
         return Response({'detail': 'User or account not found'}, status=status.HTTP_404_NOT_FOUND)
