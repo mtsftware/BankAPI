@@ -56,7 +56,7 @@ def UserDetailView(request, identity_no):
 @api_view(['GET', 'POST'])
 def AccountListCreateView(request, identity_no):
     try:
-        user = User.objects.get(identiy_no=identity_no)
+        user = User.objects.get(identity_no=identity_no)
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
@@ -98,7 +98,7 @@ def AccountDetailView(request, identity_no, account_id):
 @api_view(['POST'])
 def TransferView(request, identity_no, account_id):
     try:
-        user = User.objects.get(identiy_no=identity_no)
+        user = User.objects.get(identity_no=identity_no)
         main_account = Account.objects.get(pk=account_id)
     except User.DoesNotExist or Account.DoesNotExist:
         return Response({'detail': 'User or account not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -126,7 +126,7 @@ def TransferView(request, identity_no, account_id):
 @api_view(['POST'])
 def DepositAndWithdrawView(request, identity_no, account_id):
     try:
-        user = User.objects.get(pk=identity_no)
+        user = User.objects.get(identity_no=identity_no)
         account = Account.objects.get(pk=account_id)
     except User.DoesNotExist or Account.DoesNotExist:
         return Response({'detail': 'User or account not found'}, status=status.HTTP_404_NOT_FOUND)
