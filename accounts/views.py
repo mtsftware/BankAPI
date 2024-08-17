@@ -1,5 +1,4 @@
 from django.contrib.auth import authenticate
-from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -18,11 +17,7 @@ def register_view(request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            user = User.objects.get(identity_no=serializer.data['identity_no'])
-            token = Token.objects.create(user=user)
-            data = serializer.data
-            data['token'] = token.key
-            return Response(data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -32,7 +27,7 @@ def login_view(request):
     if user is None:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
-    token, created = Token.objects.get_or_create(user=user)
+    token = Token.objects.get(user=user)
     serializer = UserLoginSerializer(instance=user)
     data = serializer.data
     data['token'] = token.key
