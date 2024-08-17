@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
-    "rest_framework_simplejwt",
+    "rest_framework.authtoken",
     "accounts",
 ]
 
@@ -165,3 +165,5 @@ AUTHENTICATION_BACKENDS = [
     'accounts.backends.IdentityNoBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+AUTH_USER_MODEL = 'accounts.User'

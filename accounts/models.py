@@ -13,6 +13,8 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    USERNAME_FIELD = 'identity_no'
+
     groups = models.ManyToManyField(
         Group,
         related_name='custom_user_set',

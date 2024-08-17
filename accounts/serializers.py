@@ -1,4 +1,3 @@
-from datetime import timezone
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from .models import *
@@ -62,6 +61,10 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+class UserLoginSerializer(serializers.Serializer):
+    class Meta:
+        model = User
+        fields = ('identity_no', 'password')
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account

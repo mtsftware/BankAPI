@@ -1,38 +1,51 @@
-from accounts.backends import IdentityNoBackend
+from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import AllowAny
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from accounts.models import User, Account
-from accounts.serializers import UserSerializer, AccountSerializer, TransferSerializer, DepositAndWithdrawSerializer
+from accounts.serializers import UserSerializer, AccountSerializer, TransferSerializer, DepositAndWithdrawSerializer, \
+    UserLoginSerializer
 
 
 @api_view(['POST'])
-def UserCreateView(request):
+def register_view(request):
     if request.method == 'POST':
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            user = User.objects.get(identity_no=serializer.data['identity_no'])
+            token = Token.objects.create(user=user)
+            data = serializer.data
+            data['token'] = token.key
+            return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 def login_view(request):
-    identity_no = request.data.get('identity_no')
-    password = request.data.get('password')
+    user = authenticate(request, identity_no=request.data['identity_no'], password=request.data['password'])
+    if user is None:
+        return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = IdentityNoBackend().authenticate(request, identity_no=identity_no, password=password)
+    token, created = Token.objects.get_or_create(user=user)
+    serializer = UserLoginSerializer(instance=user)
+    data = serializer.data
+    data['token'] = token.key
+    return Response(data, status=status.HTTP_200_OK)
 
-    if user is not None:
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }, status=status.HTTP_200_OK)
 
-    else:
-        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication, SessionAuthentication))
+@permission_classes([IsAuthenticated])
+def test_token_view(request):
+    return Response("passed for {}".format(request.user.first_name))
+
+
 @api_view(['GET', 'PUT', 'DELETE'])
 def UserDetailView(request, identity_no):
     if request.method == 'GET':
@@ -53,6 +66,8 @@ def UserDetailView(request, identity_no):
         user = User.objects.get(identity_no=identity_no)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 @api_view(['GET', 'POST'])
 def AccountListCreateView(request, identity_no):
     try:
@@ -72,6 +87,7 @@ def AccountListCreateView(request, identity_no):
             serializer.save(user=user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def AccountDetailView(request, identity_no, account_id):
@@ -94,6 +110,7 @@ def AccountDetailView(request, identity_no, account_id):
         account = Account.objects.get(pk=account_id)
         account.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 @api_view(['POST'])
 def TransferView(request, identity_no, account_id):
@@ -123,6 +140,7 @@ def TransferView(request, identity_no, account_id):
                 return Response({'detail': 'Insufficient balance'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['POST'])
 def DepositAndWithdrawView(request, identity_no, account_id):
     try:
@@ -150,8 +168,5 @@ def DepositAndWithdrawView(request, identity_no, account_id):
             else:
                 return Response({'detail': 'Insufficient balance'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
 
 # Create your views here.
