@@ -33,11 +33,11 @@ def login_view(request):
     data['token'] = token.key
     return Response(data, status=status.HTTP_200_OK)
 
-@api_view(['POST'])
+@api_view(['GET'])
 @authentication_classes((TokenAuthentication, SessionAuthentication))
 @permission_classes([IsAuthenticated])
 def logout_view(request):
-    if request.method == 'POST':
+    if request.method == 'GET':
         try:
             request.user.auth_token.delete()
             return Response("Logged out successfully", status=status.HTTP_200_OK)
