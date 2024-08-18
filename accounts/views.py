@@ -1,5 +1,4 @@
 from django.contrib.auth import authenticate
-from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -18,11 +17,7 @@ def register_view(request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            user = User.objects.get(identity_no=serializer.data['identity_no'])
-            token = Token.objects.create(user=user)
-            data = serializer.data
-            data['token'] = token.key
-            return Response(data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -32,7 +27,7 @@ def login_view(request):
     if user is None:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
-    token, created = Token.objects.get_or_create(user=user)
+    token = Token.objects.get(user=user)
     serializer = UserLoginSerializer(instance=user)
     data = serializer.data
     data['token'] = token.key
@@ -47,31 +42,35 @@ def test_token_view(request):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def UserDetailView(request, identity_no):
+@authentication_classes((TokenAuthentication, SessionAuthentication))
+@permission_classes([IsAuthenticated])
+def UserDetailView(request):
     if request.method == 'GET':
         try:
-            user = User.objects.get(identity_no=identity_no)
+            user = request.user
             serializer = UserSerializer(user)
             return Response(serializer.data)
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
     if request.method == 'PUT':
-        user = User.objects.get(identity_no=identity_no)
+        user = request.user
         serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'DELETE':
-        user = User.objects.get(identity_no=identity_no)
+        user = request.user
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET', 'POST'])
-def AccountListCreateView(request, identity_no):
+@authentication_classes((TokenAuthentication, SessionAuthentication))
+@permission_classes([IsAuthenticated])
+def AccountListCreateView(request):
     try:
-        user = User.objects.get(identity_no=identity_no)
+        user =request.user
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
@@ -90,10 +89,12 @@ def AccountListCreateView(request, identity_no):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def AccountDetailView(request, identity_no, account_id):
+@authentication_classes((TokenAuthentication, SessionAuthentication))
+@permission_classes([IsAuthenticated])
+def AccountDetailView(request, account_id):
     if request.method == 'GET':
         try:
-            user = User.objects.get(identity_no=identity_no)
+            user = request.user
             account = Account.objects.get(pk=account_id)
             serializer = AccountSerializer(account)
             return Response(serializer.data)
@@ -113,9 +114,11 @@ def AccountDetailView(request, identity_no, account_id):
 
 
 @api_view(['POST'])
-def TransferView(request, identity_no, account_id):
+@authentication_classes((TokenAuthentication, SessionAuthentication))
+@permission_classes([IsAuthenticated])
+def TransferView(request, account_id):
     try:
-        user = User.objects.get(identity_no=identity_no)
+        user = request.user
         main_account = Account.objects.get(pk=account_id)
     except User.DoesNotExist or Account.DoesNotExist:
         return Response({'detail': 'User or account not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -142,9 +145,11 @@ def TransferView(request, identity_no, account_id):
 
 
 @api_view(['POST'])
-def DepositAndWithdrawView(request, identity_no, account_id):
+@authentication_classes((TokenAuthentication, SessionAuthentication))
+@permission_classes([IsAuthenticated])
+def DepositAndWithdrawView(request, account_id):
     try:
-        user = User.objects.get(identity_no=identity_no)
+        user = request.user
         account = Account.objects.get(pk=account_id)
     except User.DoesNotExist or Account.DoesNotExist:
         return Response({'detail': 'User or account not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -168,5 +173,6 @@ def DepositAndWithdrawView(request, identity_no, account_id):
             else:
                 return Response({'detail': 'Insufficient balance'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # Create your views here.
