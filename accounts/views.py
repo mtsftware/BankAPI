@@ -27,19 +27,22 @@ def login_view(request):
     if user is None:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
-    token = Token.objects.get(user=user)
+    token, create = Token.objects.get_or_create(user=user)
     serializer = UserLoginSerializer(instance=user)
     data = serializer.data
     data['token'] = token.key
     return Response(data, status=status.HTTP_200_OK)
 
-
-@api_view(['GET'])
+@api_view(['POST'])
 @authentication_classes((TokenAuthentication, SessionAuthentication))
 @permission_classes([IsAuthenticated])
-def test_token_view(request):
-    return Response("passed for {}".format(request.user.first_name))
-
+def logout_view(request):
+    if request.method == 'POST':
+        try:
+            request.user.auth_token.delete()
+            return Response("Logged out successfully", status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @authentication_classes((TokenAuthentication, SessionAuthentication))
