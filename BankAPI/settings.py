@@ -147,7 +147,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ALLOW_ALL_ORIGINS = True
 
 AUTHENTICATION_BACKENDS = [
-    'accounts.backends.IdentityNoBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 

@@ -6,7 +6,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from accounts.models import User, Account
+from accounts.models import User, Account, DepositAndWithdraw, Transfer
 from accounts.serializers import UserSerializer, AccountSerializer, TransferSerializer, DepositAndWithdrawSerializer, \
     UserLoginSerializer
 
@@ -98,7 +98,7 @@ def AccountListCreateView(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['GET', 'PUT', 'DELETE', 'PATCH'])
 @authentication_classes((TokenAuthentication, SessionAuthentication))
 @permission_classes([IsAuthenticated])
 def AccountDetailView(request, account_id):
@@ -121,9 +121,16 @@ def AccountDetailView(request, account_id):
         account = Account.objects.get(pk=account_id)
         account.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    if request.method == 'PATCH':
+        account = Account.objects.get(pk=account_id)
+        serializer = AccountSerializer(account, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
+@api_view(['GET','POST'])
 @authentication_classes((TokenAuthentication, SessionAuthentication))
 @permission_classes([IsAuthenticated])
 def TransferView(request, account_id):
@@ -152,17 +159,22 @@ def TransferView(request, account_id):
             else:
                 return Response({'detail': 'Insufficient balance'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        transfers = Transfer.objects.filter(account=main_account)
+        serializer = TransferSerializer(transfers, many=True)
+    except Exception as e:
+        return Response(f'{e}', status=status.HTTP_404_NOT_FOUND)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-@api_view(['POST'])
+@api_view(['GET','POST'])
 @authentication_classes((TokenAuthentication, SessionAuthentication))
 @permission_classes([IsAuthenticated])
 def DepositAndWithdrawView(request, account_id):
     try:
         user = request.user
         account = Account.objects.get(pk=account_id)
-    except User.DoesNotExist or Account.DoesNotExist:
-        return Response({'detail': 'User or account not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'detail': f'{e}'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'POST':
         serializer = DepositAndWithdrawSerializer(data=request.data)
@@ -176,6 +188,7 @@ def DepositAndWithdrawView(request, account_id):
                     control = True
             if type == 'deposit':
                 account.balance += amount
+                control = True
             if control:
                 account.save()
                 serializer.save(account=account)
@@ -183,6 +196,12 @@ def DepositAndWithdrawView(request, account_id):
             else:
                 return Response({'detail': 'Insufficient balance'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        dw = DepositAndWithdraw.objects.filter(account=account)
+        serializer = DepositAndWithdrawSerializer(dw, many=True)
+    except Exception as e:
+        return Response(f'{e}', status=status.HTTP_404_NOT_FOUND)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # Create your views here.
