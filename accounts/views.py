@@ -105,7 +105,7 @@ def AccountDetailView(request, account_id):
     if request.method == 'GET':
         try:
             user = request.user
-            account = Account.objects.get(pk=account_id)
+            account = Account.objects.get(pk=account_id, user=user)
             serializer = AccountSerializer(account)
             return Response(serializer.data)
         except:
@@ -136,8 +136,8 @@ def AccountDetailView(request, account_id):
 def TransferView(request, account_id):
     try:
         user = request.user
-        main_account = Account.objects.get(pk=account_id)
-    except User.DoesNotExist or Account.DoesNotExist:
+        main_account = Account.objects.get(pk=account_id, user=user)
+    except Exception as e:
         return Response({'detail': 'User or account not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'POST':
@@ -160,7 +160,7 @@ def TransferView(request, account_id):
                 return Response({'detail': 'Insufficient balance'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     try:
-        transfers = Transfer.objects.filter(account=main_account)
+        transfers = Transfer.objects.filter(account=main_account, account__user=request.user)
         serializer = TransferSerializer(transfers, many=True)
     except Exception as e:
         return Response(f'{e}', status=status.HTTP_404_NOT_FOUND)
@@ -172,7 +172,7 @@ def TransferView(request, account_id):
 def DepositAndWithdrawView(request, account_id):
     try:
         user = request.user
-        account = Account.objects.get(pk=account_id)
+        account = Account.objects.get(pk=account_id, user=user)
     except Exception as e:
         return Response({'detail': f'{e}'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -197,7 +197,7 @@ def DepositAndWithdrawView(request, account_id):
                 return Response({'detail': 'Insufficient balance'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     try:
-        dw = DepositAndWithdraw.objects.filter(account=account)
+        dw = DepositAndWithdraw.objects.filter(account=account, account__user=request.user)
         serializer = DepositAndWithdrawSerializer(dw, many=True)
     except Exception as e:
         return Response(f'{e}', status=status.HTTP_404_NOT_FOUND)
