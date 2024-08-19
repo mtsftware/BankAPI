@@ -201,5 +201,45 @@ The following headers are used in all requests:
       ]
 ```
 
+# Installation
+
+1. Clone the Project:
+   
+  ```bash
+     git clone https://github.com/mtsftware/BankAPI
+  ```
+
+2. Create and Activate the Virtual Environment:
+
+   ```bash
+      python -m venv .venv
+      source .venv/bin/activate  # Linux/macOS
+      .venv\Scripts\activate      # Windows
+   ```
+
+3. Install Dependencies:
+
+     ```bash
+    pip install -r requirements.txt
+     ```
+
+4. Create the .env file and configure it (Use MySQL):
+
+     ```bash
+     cp .env.example .env
+     ```
+
+5. Create the database and apply migrations:
+
+    ```bash
+    python manage.py makemigrations
+    python manage.py migrate
+    ```
+
+6. Start the development server:
+
+   ```bash
+    python manage.py runserver
+   ```
     
 
