@@ -19,8 +19,11 @@ API'nin temel URL'si aşağıdaki gibidir. API'yi kendi ortamınızda çalışt�
 API, Django'nun token-based authentication (token tabanlı kimlik doğrulama) mekanizmasını kullanır. Kullanıcıların API'yi kullanabilmesi için, bir token elde etmeleri ve bu token'ı her isteklerinde göndermeleri gerekmektedir. Bu token, kullanıcıya login işlemi sırasında sağlanır ve Authorization başlığı altında her API isteğinde belirtilmelidir.
 
 ### Authentication Gereksinimleri
-  1.Token Alma: Kullanıcı, login olduktan sonra bir token alır.
-  2.Token Kullanımı: Herhangi bir authenticated (kimlik doğrulaması gerektiren) istekte bulunurken, Authorization başlığı altında bu token belirtilmelidir.
+
+1. **Token Alma**: Kullanıcı giriş yaptıktan sonra bir token alır. Bu token, giriş işlemi sırasında sağlanır ve kimlik doğrulama amacıyla kullanılır.
+
+2. **Token Kullanımı**: Kimlik doğrulaması gerektiren her istekte, `Authorization` başlığı altında bu token belirtilmelidir. Token, API'ye erişim izni verilen kullanıcıların doğruluğunu ve yetkilendirilmesini sağlar.
+
 
 ## Headers
 
@@ -35,9 +38,9 @@ Tüm isteklerde aşağıdaki başlıklar kullanılır:
 
 ### 1. Register (POST)
 
-Endpoint: /register/
-Açıklama: Kullanıcı kaydı yapmak için kullanılır.
-Örnek JSON Gönderim:
+1. Endpoint: /register/
+2. Açıklama: Kullanıcı kaydı yapmak için kullanılır.
+3. Örnek JSON Gönderim:
    ```bash
           {
             "first_name": "first_name",
@@ -51,9 +54,9 @@ Açıklama: Kullanıcı kaydı yapmak için kullanılır.
 
 ### 2. Login (POST)
 
-Endpoint: /login/
-Açıklama: Kullanıcı girişi yapar ve bir token alır.
-Örnek JSON Gönderim:
+1. Endpoint: /login/
+2. Açıklama: Kullanıcı girişi yapar ve bir token alır.
+3. Örnek JSON Gönderim:
 
   ```bash
           {
@@ -61,7 +64,7 @@ Açıklama: Kullanıcı girişi yapar ve bir token alır.
             "password": "123456"
           }
    ```
-Yanıt:
+4. Yanıt:
 
   ```bash
           {
@@ -71,18 +74,18 @@ Yanıt:
 
 ### 3. Logout (GET)
 
-Endpoint: /logout/
-Açıklama: Kullanıcının sistemden çıkış yapmasını sağlar. Authentication gerektirir.
-Başlık:
+1. Endpoint: /logout/
+2. Açıklama: Kullanıcının sistemden çıkış yapmasını sağlar. Authentication gerektirir.
+3. Başlık:
   ```bash
           Authorization: Token user_token
   ```
 
 ### 4. Profile (GET, PUT, PATCH, DELETE)
 
-Endpoint: /profile/
-Açıklama: Kullanıcı profil bilgilerini görüntüler, günceller veya siler. Authentication gerektirir.
-GET Örneği:
+1. Endpoint: /profile/
+2. Açıklama: Kullanıcı profil bilgilerini görüntüler, günceller veya siler. Authentication gerektirir.
+3. GET Örneği:
   ```bash
          {
           "id": 3,
@@ -97,13 +100,13 @@ GET Örneği:
         }
   ```
 
-PATCH/PUT: Yalnızca email ve phone_number alanları güncellenebilir.
+4. PATCH/PUT: Yalnızca email ve phone_number alanları güncellenebilir.
 
 ### 5. Banka Hesapları (GET, POST)
 
-Endpoint: /profile/my_accounts/
-Açıklama: Kullanıcının banka hesaplarını görüntüler veya yeni bir hesap oluşturur. Authentication gerektirir.
-POST Örneği:
+1. Endpoint: /profile/my_accounts/
+2. Açıklama: Kullanıcının banka hesaplarını görüntüler veya yeni bir hesap oluşturur. Authentication gerektirir.
+3. POST Örneği:
    ```bash
          {
             "account_type": "non_term" or "term"
@@ -127,9 +130,9 @@ GET Örneği:
 
 ### 6. Hesap Detayı (GET, PUT, PATCH, DELETE)
 
-Endpoint: /profile/my_accounts/{account_id}/
-Açıklama: Belirli bir banka hesabının detaylarını görüntüler, günceller veya siler. Authentication gerektirir.
-GET Örneği:
+1. Endpoint: /profile/my_accounts/{account_id}/
+2. Açıklama: Belirli bir banka hesabının detaylarını görüntüler, günceller veya siler. Authentication gerektirir.
+3. GET Örneği:
   ```bash
          {
           "id": 4,
@@ -141,20 +144,20 @@ GET Örneği:
           "updated_at": ""
         }
   ```
-PATCH/PUT: Sadece account_type alanı güncellenebilir.
+4. PATCH/PUT: Sadece account_type alanı güncellenebilir.
 
 ### 7. Para Yatırma ve Para Çekme (GET, POST)
 
-Endpoint: /profile/my_accounts/{account_id}/dw/
-Açıklama: Belirli bir hesaba para yatırma veya hesaptan para çekme işlemi gerçekleştirir. Authentication gerektirir.
-POST Örneği:
+1. Endpoint: /profile/my_accounts/{account_id}/dw/
+2. Açıklama: Belirli bir hesaba para yatırma veya hesaptan para çekme işlemi gerçekleştirir. Authentication gerektirir.
+3. POST Örneği:
   ```bash
          {
           "types": "deposit" or "withdraw",
           "amount": 500
           }
   ```
-GET Örneği:
+4. GET Örneği:
  ```bash
       [
         {
@@ -170,9 +173,9 @@ GET Örneği:
 
 ### 8. Transfer (GET, POST)
 
-Endpoint: /profile/my_accounts/{account_id}/transfer/
-Açıklama: Belirli bir hesaptan başka bir hesaba para transferi yapar. Authentication gerektirir.
-POST Örneği:
+1. Endpoint: /profile/my_accounts/{account_id}/transfer/
+2. Açıklama: Belirli bir hesaptan başka bir hesaba para transferi yapar. Authentication gerektirir.
+3. POST Örneği:
 ```bash
       {
         "amount": 200,
@@ -180,7 +183,7 @@ POST Örneği:
         "description": "opsiyonel"
       }
 ```
-GET Örneği:
+4. GET Örneği:
 
 ```bash
       [
