@@ -44,7 +44,7 @@ def logout_view(request):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['GET', 'PUT', 'DELETE', 'PATCH'])
 @authentication_classes((TokenAuthentication, SessionAuthentication))
 @permission_classes([IsAuthenticated])
 def UserDetailView(request):
@@ -66,6 +66,13 @@ def UserDetailView(request):
         user = request.user
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    if request.method == 'PATCH':
+        user = request.user
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'POST'])
