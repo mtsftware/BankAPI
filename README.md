@@ -1,14 +1,14 @@
-# BankAPI Dökümantasyon
+# BankAPI Documentation
 
-Bu proje, temel bankacılık işlemlerini simüle eden bir API oluşturmak amacıyla geliştirilmiştir. Django Rest Framework kullanılarak hazırlanan bu API, kullanıcı kayıtları, hesap yönetimi, para yatırma/çekme ve transfer işlemleri gibi özellikleri içerir.
+This project is designed to create an API that simulates basic banking operations. Developed using Django Rest Framework, this API includes features such as user registrations, account management, deposit/withdrawal, and transfer operations.
 
-## API'nin Amacı
+## Purpose of the API
 
-Bu API, internet bankacılığı işlemlerinin backend tarafını simüle etmek amacıyla geliştirilmiştir. Django Rest Framework yeteneklerimi test etmek ve geliştirmek için oluşturduğum bu API, temel bankacılık işlemlerinin (hesap yönetimi, para yatırma/çekme, transferler vb.) gerçekleştirilmesini sağlar. API'yi kullanarak, bankacılık sisteminin çekirdeğini simüle eden bir yapı oluşturabilirsiniz.
+This API is designed to simulate the backend side of online banking operations. Created to test and enhance my skills with Django Rest Framework, this API facilitates basic banking operations such as account management, deposits/withdrawals, and transfers. By using this API, you can build a structure that simulates the core of a banking system.
 
 ## Base URL
 
-API'nin temel URL'si aşağıdaki gibidir. API'yi kendi ortamınızda çalıştırmak için AWS veya benzeri bulut hizmetlerinde barındırmanız ve kendi domaininizi kullanmanız gerekmektedir.
+The base URL of the API is as follows. To run the API in your own environment, you need to host it on AWS or similar cloud services and use your own domain.
 
   ```bash
     http://your_domain/accounts
@@ -16,55 +16,54 @@ API'nin temel URL'si aşağıdaki gibidir. API'yi kendi ortamınızda çalışt�
 
 ## Authentication
 
-API, Django'nun token-based authentication (token tabanlı kimlik doğrulama) mekanizmasını kullanır. Kullanıcıların API'yi kullanabilmesi için, bir token elde etmeleri ve bu token'ı her isteklerinde göndermeleri gerekmektedir. Bu token, kullanıcıya login işlemi sırasında sağlanır ve Authorization başlığı altında her API isteğinde belirtilmelidir.
+The API uses Django's token-based authentication mechanism. To use the API, users need to obtain a token and include this token in each of their requests. The token is provided to the user during the login process and must be specified in the `Authorization` header for each API request.
 
-### Authentication Gereksinimleri
+### Authentication Requirements
 
-1. **Token Alma**: Kullanıcı giriş yaptıktan sonra bir token alır. Bu token, giriş işlemi sırasında sağlanır ve kimlik doğrulama amacıyla kullanılır.
+1. **Token Acquisition**: After logging in, the user receives a token. This token is provided during the login process and is used for authentication purposes.
 
-2. **Token Kullanımı**: Kimlik doğrulaması gerektiren her istekte, `Authorization` başlığı altında bu token belirtilmelidir. Token, API'ye erişim izni verilen kullanıcıların doğruluğunu ve yetkilendirilmesini sağlar.
+2. **Token Usage**: For every request that requires authentication, the token must be specified in the `Authorization` header. The token ensures the validity and authorization of users accessing the API.
 
 
 ## Headers
 
-Tüm isteklerde aşağıdaki başlıklar kullanılır:
+The following headers are used in all requests:
 
 ```bash
   Content-Type: application/json
-  Authorization: Token user_token (sadece kimlik doğrulaması gerektiren işlemler için)
+  Authorization: Token user_token (for requests requiring authentication only)
 ```
 
-## API İşlemleri
+## API Operations
 
 ### 1. Register (POST)
 
 1. Endpoint: /register/
-2. Açıklama: Kullanıcı kaydı yapmak için kullanılır.
-3. Örnek JSON Gönderim:
+2. Description: Used to register a new user.
+3. Example JSON Payload:
    ```bash
           {
             "first_name": "first_name",
             "last_name": "last_name",
             "email": "test@example.com",
-            "password": "6_haneli_rakam",
-            "identity_no": "türkiye_cumhuriyeti_kimlik_no",
-            "phone_number": "Türkiye_kodlu_telefon_numarası"
+            "password": "6_digit_number",
+            "identity_no": "turkish_national_id",
+            "phone_number": "turkish_phone_number"
           }
    ```
 
 ### 2. Login (POST)
 
 1. Endpoint: /login/
-2. Açıklama: Kullanıcı girişi yapar ve bir token alır.
-3. Örnek JSON Gönderim:
-
+2. Description: Logs in a user and provides a token.
+3. Example JSON Payload:
   ```bash
           {
-            "identity_no": "türkiye_cumhuriyeti_kimlik_no",
+            "identity_no": "turkish_national_id",
             "password": "123456"
           }
    ```
-4. Yanıt:
+4. Response:
 
   ```bash
           {
@@ -75,8 +74,8 @@ Tüm isteklerde aşağıdaki başlıklar kullanılır:
 ### 3. Logout (GET)
 
 1. Endpoint: /logout/
-2. Açıklama: Kullanıcının sistemden çıkış yapmasını sağlar. Authentication gerektirir.
-3. Başlık:
+2. Description: Logs out the user from the system. Requires authentication.
+3. Header:
   ```bash
           Authorization: Token user_token
   ```
@@ -84,8 +83,8 @@ Tüm isteklerde aşağıdaki başlıklar kullanılır:
 ### 4. Profile (GET, PUT, PATCH, DELETE)
 
 1. Endpoint: /profile/
-2. Açıklama: Kullanıcı profil bilgilerini görüntüler, günceller veya siler. Authentication gerektirir.
-3. GET Örneği:
+2. Description: Retrieves, updates, or deletes the user's profile information. Requires authentication.
+3. Example GET Response:
   ```bash
          {
           "id": 3,
@@ -100,20 +99,21 @@ Tüm isteklerde aşağıdaki başlıklar kullanılır:
         }
   ```
 
-4. PATCH/PUT: Yalnızca email ve phone_number alanları güncellenebilir.
+4. PATCH/PUT: Only the `email` and `phone_number` fields can be updated.
 
-### 5. Banka Hesapları (GET, POST)
+### 5. Bank Accounts (GET, POST)
 
 1. Endpoint: /profile/my_accounts/
-2. Açıklama: Kullanıcının banka hesaplarını görüntüler veya yeni bir hesap oluşturur. Authentication gerektirir.
-3. POST Örneği:
+2. Description: Retrieves the user's bank accounts or creates a new account. Requires authentication.
+3. Example POST Payload:
    ```bash
          {
             "account_type": "non_term" or "term"
          }
-  ```
-
-GET Örneği:
+    ```
+   
+4. Example GET Payload:
+   
   ```bash
          [
           {
@@ -128,36 +128,38 @@ GET Örneği:
         ]
   ```
 
-### 6. Hesap Detayı (GET, PUT, PATCH, DELETE)
+### 6. Account Details (GET, PUT, PATCH, DELETE)
 
 1. Endpoint: /profile/my_accounts/{account_id}/
-2. Açıklama: Belirli bir banka hesabının detaylarını görüntüler, günceller veya siler. Authentication gerektirir.
-3. GET Örneği:
+2. Description: Retrieves, updates, or deletes the details of a specific bank account. Requires authentication.
+3. Example GET Response:
   ```bash
          {
           "id": 4,
           "account_type": "non_term",
           "account_number": "",
-          "iban": "iban_tr",
+          "iban": "tr_iban",
           "balance": "0.00",
           "created_at": "",
           "updated_at": ""
         }
   ```
-4. PATCH/PUT: Sadece account_type alanı güncellenebilir.
+4. PATCH/PUT: Only the `account_type` field can be updated.
 
-### 7. Para Yatırma ve Para Çekme (GET, POST)
+### 7. Deposit and Withdrawal (GET, POST)
 
 1. Endpoint: /profile/my_accounts/{account_id}/dw/
-2. Açıklama: Belirli bir hesaba para yatırma veya hesaptan para çekme işlemi gerçekleştirir. Authentication gerektirir.
-3. POST Örneği:
+2. Description: Performs deposit or withdrawal transactions for a specific account. Requires authentication.
+3. Example POST Payload:
   ```bash
          {
           "types": "deposit" or "withdraw",
           "amount": 500
           }
   ```
-4. GET Örneği:
+
+4. Example GET Payload:
+   
  ```bash
       [
         {
@@ -174,16 +176,16 @@ GET Örneği:
 ### 8. Transfer (GET, POST)
 
 1. Endpoint: /profile/my_accounts/{account_id}/transfer/
-2. Açıklama: Belirli bir hesaptan başka bir hesaba para transferi yapar. Authentication gerektirir.
-3. POST Örneği:
+2. Description: Transfers money from one account to another. Requires authentication.
+3. Example POST Payload:
 ```bash
       {
         "amount": 200,
         "iban": "target_iban",
-        "description": "opsiyonel"
+        "description": "optional"
       }
 ```
-4. GET Örneği:
+4. Example Get Payload:
 
 ```bash
       [
